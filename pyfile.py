@@ -463,6 +463,221 @@ def analysis():
 							   valuesprop=valuesprop, txtprop=txtprop, )
 
 
+
+@app.route('/analysistable/', methods=['post'])
+def analysistable():
+	passwo=request.form["pass"]
+	gr=Graph(password=passwo)
+	inputstr = request.form['inputstr']
+	gr.run("Merge(a:ListItem{value:'"+inputstr+"'})")
+
+	propdict_50 = {'type': ("request", "issue"), 'request_id':(list(range(1,2001))),'severity': ("unclassified", "minor", "normal", "major", "critical"),
+				'seniority': ("junior", "regular", "senior", "management"),
+				'against': ("systems", "software", "hardware", "access", "login"),
+				'priority': ("unassigned", "low", "medium", "high"),'it_owner_id':(list(range(1,51))),'days_open':(list(range(1,21))),
+				'satisfaction': ("unknown", "unsatisfied", "satisfied", "highly")}
+	dict_50 = {"Request": "ticket_type", "Issue": "ticket_type", "0 - Unclassified": "severity", "1 - Minor": "severity",
+			"2 - Normal": "severity", "3 - Major": "severity", "4 - Critical": "severity",
+			"1 - Junior": "requester_seniority", "2 - Regular": "requester_seniority", "3 - Senior": "requester_seniority",
+			"4 - Management": "requester_seniority", "Systems": "filed_against", "Software": "filed_against",
+			"Hardware": "filed_against", "Access/Login": "filed_against", "0 - Unassigned": "priority",
+			"1 - Low": "priority", "2 - Medium": "priority", "3 - High": "priority", "0 - Unknown": "satisfaction",
+			"1 - Unsatisfied": "satisfaction", "2 - Satisfied": "satisfaction", "3 - Highly satisfied": "satisfaction"}
+	dict_51 = {"request": "Request", "issue": "Issue", "unclassified": "0 - Unclassified", "minor": "1 - Minor",
+			 "normal": "2 - Normal", "major": "3 - Major", "critical": "4 - Critical", "junior": "1 - Junior",
+			 "regular": "2 - Regular", "senior": "3 - Senior", "management": "4 - Management", "systems": "Systems",
+			 "software": "Software", "hardware": "Hardware", "login": "Access/Login", "access": "Access/Login",
+			 "unassigned": "0 - Unassigned", "low": "1 - Low", "medium": "2 - Medium", "high": "3 - High",
+			 "unknown": "0 - Unknown", "unsatisfied": "1 - Unsatisfied", "satisfied": "2 - Satisfied",
+			 "highly": "3 - Highly satisfied"}
+	ticket_typelist=[]
+	severitylist=[]
+	request_idlist=[]
+	requester_senioritylist=[]
+	filed_againstlist=[]
+	prioritylist=[]
+	it_owner_idlist=[]
+	days_openlist=[]
+	satisfactionlist=[]
+	list0 = []
+	list1 = []
+	list2 = []
+	if inputstr!="":
+		inputstr += "???"
+		tokens = nltk.word_tokenize(inputstr)
+		print(tokens)
+		for token in tokens:
+			token = str.lower(token)
+			if token in propdict_50.keys():
+				m = 0
+				for props in propdict_50[token]:
+					if props in tokens:
+						m = 1
+				if m == 0:
+					list0.append(dict_50[dict_51[propdict_50[token][0]]])
+
+		str1 = ""
+
+		for word in tokens:
+			ind = tokens.index(word)
+			word = str.lower(word)
+			tokens[ind]=word
+
+			cword = ""
+			dword=""
+			if word.isdigit():
+				if not tokens[ind + 1][0] == '-':
+					list1.append(word)
+				else:
+					tokens[ind]='??'
+			elif not word.isalpha():
+				for i in word:
+					if i.isalpha():
+						cword += i
+					if i.isdigit():
+						dword+=i
+				tokens[ind]=cword
+				if len(dword)>0 and word[1]!='-':
+					tokens.insert(ind + 1, dword)
+				print(tokens)
+			else:
+				cword = word
+		for word in tokens:
+			ind = tokens.index(word)
+			if word in dict_51.keys():
+				str1 += dict_50[dict_51[word]] + ":'" + dict_51[word] + "'"
+				str1 += ","
+			if word == "requester" and tokens[ind + 1] == "id":
+				list2.append("request_id")
+			if word == "it" and tokens[ind + 1].lower() == "owner" and tokens[ind + 2].lower() == "id":
+				list2.append("it_owner_id")
+			if word == "open":
+				list2.append("days_open")
+
+		if len(list1) == len(list2):
+			for i in list(range(len(list1))):
+				str1 += list2[i] + ":" + list1[i] + ","
+		elif len(list2)>len(list1) and len(list1)!=0:
+			if (int(list1[0]) in propdict_50[list2[0]]) and (int(list1[len(list1)-1]) in propdict_50[list2[len(list1)-1]]):
+				print("satisfied")
+				list0.append(list2[len(list2)-1])
+				for i in list(range(len(list1))):
+					str1 += list2[i] + ":" + list1[i] + ","
+			else:
+				print("not satisfied")
+				list0.append(list2[0])
+				for i in list(range(len(list1))):
+					str1 += list2[i+1] + ":" + list1[i] + ","
+		elif len(list2)!=0:
+			list0.append(list2[0])
+
+		a = len(str1) - 1
+		print(list0)
+		print(list1)
+		print(list2)
+		rqid = str1
+		idval = ""
+		prop = "Days Open"
+		valtochart = ""
+		temppropvalues = []
+		txt = request.form["query"].strip()
+		txtrqid = request.form["rqidquery"].strip()
+		txtprop = request.form["propquery"].strip()
+		sq = gr.run("Match (a:tempdata{" + str1[0:a] + "}) return a.ticket_type,a.severity,a.request_id,a.requester_seniority,a.filed_against,a.priority,a.it_owner_id,a.days_open,a.satisfaction").data()
+		for ent in sq:
+			propvalues=list(ent.values())
+			ticket_typelist.append(propvalues[0])
+			severitylist.append(propvalues[1])
+			request_idlist.append(propvalues[2])
+			requester_senioritylist.append(propvalues[3])
+			filed_againstlist.append(propvalues[4])
+			prioritylist.append(propvalues[5])
+			it_owner_idlist.append(propvalues[6])
+			days_openlist.append(propvalues[7])
+			satisfactionlist.append(propvalues[8])
+		proplength=len(severitylist)
+
+
+		if (inputstr==""):
+			flash("No query detected !!")
+			flash("Try Again !!")
+			return redirect(url_for("alreadyuploaded"))
+
+		return render_template('tableanalysis.html',ticket_typelist=ticket_typelist,severitylist=severitylist,request_idlist=request_idlist,
+							   requester_senioritylist=requester_senioritylist,	filed_againstlist=filed_againstlist,prioritylist=prioritylist,
+							   it_owner_idlist=it_owner_idlist,	days_openlist=days_openlist,satisfactionlist=satisfactionlist, proplength=proplength)
+
+	else:
+		keys = []
+		vals = []
+		valuessing = []
+		valuesrqid = []
+		labelsrqid = []
+		tempvalues = []
+		valuesprop = []
+		labelsprop = []
+		rqid = ""
+		propsstr=""
+		idval = ""
+		prop = ""
+		txtprop = ""
+		valtochart = ""
+		temppropvalues = []
+		txt = request.form["query"].strip()
+		txtrqid = request.form["rqidquery"].strip()
+		txtprop = request.form["propquery"].strip()
+		if not txt == "":
+			properties = list(txt.split(','))
+			for i in properties:
+				k, v = i.split(':')
+				keys.append(k.strip().lower())
+				vals.append(v.strip().title())
+			props = dict(zip(keys, vals))
+			# print(props)
+			propsstr += "{"
+			for i, j in props.items():
+				propsstr += i + ":"
+				propsstr += "'" + j + "',"
+			l = len(propsstr)
+			propsstr = propsstr[:l - 1]
+			propsstr += "}"
+			sq = gr.run("Match (a:tempdata" + propsstr + ") return count(*)").data()
+
+
+		if not txtrqid == "":
+			rqid, prop = txtrqid.split(",")
+			rqid, idval = rqid.split(":")
+			rqid = rqid.strip().lower()
+			idval = idval.strip()
+			prop = prop.strip().capitalize()
+			if prop == "Daysopen":
+				prop = "DaysOpen"
+			if prop == "Tickettype":
+				prop = "TicketType"
+			if prop == "Requesterseniority":
+				prop = "RequesterSeniority"
+			if prop == "Filedagainst":
+				prop = "FiledAgainst"
+			rqidq = gr.run("match (a:tempdata{" + rqid + ":" + idval + "})--(n:" + prop + ") return n." + prop + ",count(n)").data()
+
+
+		if not txtprop == "":
+			txtprop = txtprop.strip().lower()
+			propq = gr.run("match (a:tempdata) return a." + txtprop + ",count(a)").data()
+
+		if ((len(labelsrqid) == 0 and txtrqid != "") or (len(labelsprop) != 0 and labelsprop[0] == None and txtprop != "")):
+			flash("Your one or more query didn't match database records !!")
+			flash("Try Again !!")
+			return redirect(url_for("alreadyuploaded"))
+	#	if txt == "":
+	#		propsstr = "NA"
+	#		valtochart = "NA"
+
+		return render_template('analysispage.html', valtochart=valtochart, propsstr=propsstr, valuesrqid=valuesrqid,
+							   labelsrqid=labelsrqid, rqid=rqid, idval=idval, prop=prop, labelsprop=labelsprop,
+							   valuesprop=valuesprop, txtprop=txtprop, )
+
+
 if __name__ == '__main__':
 	app.debug = True
 	app.run(host="0.0.0.0", port=5050)  # specify port value
