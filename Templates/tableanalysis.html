@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tool - Analysis</title>
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+	align: center
+    width: 90%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+p {
+text-align:center;
+font-style:Bold;
+font-size:200%;
+}
+</style>
+<script>
+var list1=[]
+{%for i in ticket_typelist%}
+	list1.push("{{i}}");
+	{%endfor%}
+	var list2=[]
+{%for i in severitylist%}
+	list2.push("{{i}}");
+	{%endfor%}
+	var list3=[]
+{%for i in request_idlist%}
+	list3.push("{{i}}");
+	{%endfor%}
+	var list4=[]
+{%for i in requester_senioritylist%}
+	list4.push("{{i}}");
+	{%endfor%}
+	var list5=[]
+{%for i in filed_againstlist%}
+	list5.push("{{i}}");
+	{%endfor%}
+	var list6=[]
+{%for i in prioritylist%}
+	list6.push("{{i}}");
+	{%endfor%}
+	var list7=[]
+{%for i in it_owner_idlist%}
+	list7.push("{{i}}");
+	{%endfor%}
+	var list8=[]
+{%for i in days_openlist%}
+	list8.push("{{i}}");
+	{%endfor%}
+	var list9=[]
+	{%for i in satisfactionlist%}
+	list9.push("{{i}}");
+	{%endfor%}
+	
+
+
+	
+	</script>
+</head>
+<body>
+You are right here on Analysis
+<br> 
+<p> Number of Tickets = {{proplength}}</p><br>
+<script>
+var mytable="<table align='center'><tbody><tr><th>TICKET TYPE</th><th>SEVERITY</th><th>REQUESTER ID</th><th>REQUESTER SENIORITY</th><th>FILED AGAINST</th><th>PRIORITY</th><th>IT OWNER ID</th><th>DAYS OPEN</th><th>SATISFACTION</th></tr>"
+    
+	for(var i=0;i<{{proplength}};i++){
+	mytable+="<tr><td>"
+	  mytable+=list1[i];
+	  mytable+="</td><td>";
+	  mytable+=list2[i];
+	  mytable+="</td><td>";
+	  mytable+=list3[i];
+	  mytable+="</td><td>";
+	  mytable+=list4[i];
+	  mytable+="</td><td>";
+	  mytable+=list5[i];
+	  mytable+="</td><td>";
+	  mytable+=list6[i];
+	  mytable+="</td><td>";
+	  mytable+=list7[i];
+	  mytable+="</td><td>";
+	  mytable+=list8[i];
+	  mytable+="</td><td>";
+	  mytable+=list9[i];
+	  mytable+="</td>";
+	  mytable+="</tr>"
+	  }
+	document.write(mytable);
+</script>
+  
+</body>
+</html>
+
