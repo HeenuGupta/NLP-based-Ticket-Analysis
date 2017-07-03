@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Tool - Home</title>
+</head>
+<body>
+
+{% with messages = get_flashed_messages() %}
+         {% if messages %}
+            <ul>
+               {% for message in messages %}
+               <li>{{ message }}</li>
+               {% endfor %}
+            </ul>
+         {% endif %}
+      {% endwith %}
+
+<fieldset>
+<legend>Authentication</legend>
+   <form action="http://127.0.0.1:5050/results/" method="post" enctype="multipart/form-data">
+   <dl>
+   <dt>Enter Employee AD ID</dt>
+   <dd><input type="text" name="adid" placeholder="Employee AD ID" required></dd><br>
+   <dt>Enter Database password</dt>
+   <dd><input type="password" name="pass" placeholder="Password" required></dd><br>
+   </dl>
+   </fieldset>
+   <br>
+   <fieldset>
+   <legend>Data Set</legend>
+   <br>
+   <b style="font-size: 20px;font-style: italic;">Choose your file</b>
+   <input type="file" name="file" align="center"><br>
+   
+   <input type="submit" name="sbutton" value="UPLOAD" align="center">
+  <br><br><br><br>
+<b style="font-size: 20px;font-style: italic;">Data already uploaded ?</b>
+<br>
+<input type="submit" value="PROCEED" formaction="http://127.0.0.1:5050/alreadyuploaded/"> 
+</form>
+</fieldset>
+
+</body>
+</html>
