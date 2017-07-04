@@ -296,12 +296,10 @@ def analysis():
 				str1 += list2[i] + ":" + list1[i] + ","
 		elif len(list2)>len(list1) and len(list1)!=0:
 			if (int(list1[0]) in propdict_50[list2[0]]) and (int(list1[len(list1)-1]) in propdict_50[list2[len(list1)-1]]):
-				print("satisfied")
 				list0.append(list2[len(list2)-1])
 				for i in list(range(len(list1))):
 					str1 += list2[i] + ":" + list1[i] + ","
 			else:
-				print("not satisfied")
 				list0.append(list2[0])
 				for i in list(range(len(list1))):
 					str1 += list2[i+1] + ":" + list1[i] + ","
@@ -450,10 +448,11 @@ def analysis():
 		# print(labelsprop)
 		# print(valuesprop)
 
-		if ((len(labelsrqid) == 0 and txtrqid != "") or (len(labelsprop) != 0 and labelsprop[0] == None and txtprop != "")):
+		if ((len(labelsrqid) == 0 and txtrqid != "") or (valtochart == 0 and txt != "") or (
+					len(labelsprop) != 0 and labelsprop[0] == None and txtprop != "") or (inputstr=="" and txt=="" and txtrqid=="" and txtprop=="")):
 			flash("Your one or more query didn't match database records !!")
-			flash("Try Again !!")
-			return redirect(url_for("alreadyuploaded"))
+			flash("Try again using dedicated fields.")
+			return render_template("missing.html")
 	#	if txt == "":
 	#		propsstr = "NA"
 	#		valtochart = "NA"
@@ -499,6 +498,7 @@ def analysistable():
 	it_owner_idlist=[]
 	days_openlist=[]
 	satisfactionlist=[]
+	proplength=0
 	list0 = []
 	list1 = []
 	list2 = []
@@ -633,13 +633,21 @@ def analysistable():
 			l = len(propsstr)
 			propsstr = propsstr[:l - 1]
 			propsstr += "}"
-			sq = gr.run("Match (a:tempdata" + propsstr + ") return count(*)").data()
+			sq = gr.run("Match (a:tempdata" + propsstr + ") return a.ticket_type,a.severity,a.request_id,a.requester_seniority,a.filed_against,a.priority,a.it_owner_id,a.days_open,a.satisfaction").data()
+			for ent in sq:
+				propvalues = list(ent.values())
+				ticket_typelist.append(propvalues[0])
+				severitylist.append(propvalues[1])
+				request_idlist.append(propvalues[2])
+				requester_senioritylist.append(propvalues[3])
+				filed_againstlist.append(propvalues[4])
+				prioritylist.append(propvalues[5])
+				it_owner_idlist.append(propvalues[6])
+				days_openlist.append(propvalues[7])
+				satisfactionlist.append(propvalues[8])
+			proplength = len(severitylist)
 
-
-
-
-
-		if not txtrqid == "":
+		elif not txtrqid == "":
 			rqid, prop = txtrqid.split(",")
 			rqid, idval = rqid.split(":")
 			rqid = rqid.strip().lower()
@@ -653,24 +661,54 @@ def analysistable():
 				prop = "RequesterSeniority"
 			if prop == "Filedagainst":
 				prop = "FiledAgainst"
-			rqidq = gr.run("match (a:tempdata{" + rqid + ":" + idval + "})--(n:" + prop + ") return n." + prop + ",count(n)").data()
+			sq = gr.run(
+				"match (a:tempdata{" + rqid + ":" + idval + "})--(n:" + prop + ") return a.ticket_type,a.severity,a.request_id,a.requester_seniority,a.filed_against,a.priority,a.it_owner_id,a.days_open,a.satisfaction").data()
+			for ent in sq:
+				propvalues = list(ent.values())
+				ticket_typelist.append(propvalues[0])
+				severitylist.append(propvalues[1])
+				request_idlist.append(propvalues[2])
+				requester_senioritylist.append(propvalues[3])
+				filed_againstlist.append(propvalues[4])
+				prioritylist.append(propvalues[5])
+				it_owner_idlist.append(propvalues[6])
+				days_openlist.append(propvalues[7])
+				satisfactionlist.append(propvalues[8])
+			proplength = len(severitylist)
 
 
-		if not txtprop == "":
+		elif not txtprop == "":
 			txtprop = txtprop.strip().lower()
-			propq = gr.run("match (a:tempdata) return a." + txtprop + ",count(a)").data()
+			sq = gr.run(
+				"match (a:tempdata{})return a.ticket_type,a.severity,a.request_id,a.requester_seniority,a.filed_against,a.priority,a.it_owner_id,a.days_open,a.satisfaction").data()
+			for ent in sq:
+				propvalues = list(ent.values())
+				ticket_typelist.append(propvalues[0])
+				severitylist.append(propvalues[1])
+				request_idlist.append(propvalues[2])
+				requester_senioritylist.append(propvalues[3])
+				filed_againstlist.append(propvalues[4])
+				prioritylist.append(propvalues[5])
+				it_owner_idlist.append(propvalues[6])
+				days_openlist.append(propvalues[7])
+				satisfactionlist.append(propvalues[8])
+			proplength = len(severitylist)
 
-		if ((len(labelsrqid) == 0 and txtrqid != "") or (len(labelsprop) != 0 and labelsprop[0] == None and txtprop != "")):
-			flash("Your one or more query didn't match database records !!")
+
+		if (proplength==0):
+			flash("You have not put any query or the number of Tickets with the specified fields is 0!!")
 			flash("Try Again !!")
-			return redirect(url_for("alreadyuploaded"))
+			return render_template("missing.html")
 	#	if txt == "":
 	#		propsstr = "NA"
 	#		valtochart = "NA"
 
-		return render_template('analysispage.html', valtochart=valtochart, propsstr=propsstr, valuesrqid=valuesrqid,
-							   labelsrqid=labelsrqid, rqid=rqid, idval=idval, prop=prop, labelsprop=labelsprop,
-							   valuesprop=valuesprop, txtprop=txtprop, )
+		return render_template('tableanalysis.html', ticket_typelist=ticket_typelist, severitylist=severitylist,
+							   request_idlist=request_idlist,
+							   requester_senioritylist=requester_senioritylist, filed_againstlist=filed_againstlist,
+							   prioritylist=prioritylist,
+							   it_owner_idlist=it_owner_idlist, days_openlist=days_openlist,
+							   satisfactionlist=satisfactionlist, proplength=proplength)
 
 
 if __name__ == '__main__':
