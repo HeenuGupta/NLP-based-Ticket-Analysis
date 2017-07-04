@@ -575,14 +575,6 @@ def analysistable():
 		print(list0)
 		print(list1)
 		print(list2)
-		rqid = str1
-		idval = ""
-		prop = "Days Open"
-		valtochart = ""
-		temppropvalues = []
-		txt = request.form["query"].strip()
-		txtrqid = request.form["rqidquery"].strip()
-		txtprop = request.form["propquery"].strip()
 		sq = gr.run("Match (a:tempdata{" + str1[0:a] + "}) return a.ticket_type,a.severity,a.request_id,a.requester_seniority,a.filed_against,a.priority,a.it_owner_id,a.days_open,a.satisfaction").data()
 		for ent in sq:
 			propvalues=list(ent.values())
@@ -642,6 +634,9 @@ def analysistable():
 			propsstr = propsstr[:l - 1]
 			propsstr += "}"
 			sq = gr.run("Match (a:tempdata" + propsstr + ") return count(*)").data()
+
+
+
 
 
 		if not txtrqid == "":
