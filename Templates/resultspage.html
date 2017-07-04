@@ -75,7 +75,7 @@
 <br>
 <fieldset>
 	
-	<form action="http://127.0.0.1:5050/analysis/" method="post">
+	<form action="http://127.0.0.1:5050/analysis/" method="post" target=_blank>
 	<input type="hidden" type="password" value="{{passval}}" name="pass"></input>
 	<div class="ui-widget" style="text-align:center;">
 	<br><br>
@@ -137,7 +137,9 @@ Example : <b>severity</b><br>
 </ul>
 <input type="text" name="propquery" placeholder="query related to property" style="width: 350px;height: 30px;font-size: 17px">
 <br><br>
-	<input type="submit" name="submit" value="SUBMIT" style="cursor: pointer;">
+<pre>
+	<input type="submit" name="submit" value="PROCEED FOR GRAPH ANALYSIS" style="cursor: pointer;">         <input type="submit" name="submit" value="PROCEED FOR TABLE ANALYSIS" formaction="http://127.0.0.1:5050/analysistable/"style="cursor: pointer;">     
+	</pre>
 </form>
 </fieldset>
 <br>
