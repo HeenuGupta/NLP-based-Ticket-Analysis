@@ -4,7 +4,8 @@ from werkzeug import secure_filename
 import csv
 from py2neo import *
 import time
-import nltk
+from nltk import word_tokenize
+from fpdf import FPDF
 
 ALLOWED_EXTENSIONS = set(['csv'])
 
@@ -20,12 +21,13 @@ def allowed_files(filename):
 
 @app.route('/')
 def home():
-	return render_template('homepage.html')
+	return render_template('index.html')
 
 
 @app.route('/alreadyuploaded/',methods=['post'])
 def alreadyuploaded():
 	passwo = request.form['pass']
+	#passwo="dkshfjksh"
 	gr = Graph(password=passwo)
 	sq = gr.run("match (a:ListItem) return a.value").data()
 	tempvalues1 = []
@@ -241,7 +243,7 @@ def analysis():
 	list2 = []
 	if inputstr!="":
 		inputstr += "???"
-		tokens = nltk.word_tokenize(inputstr)
+		tokens = word_tokenize(inputstr)
 		print(tokens)
 		for token in tokens:
 			token = str.lower(token)
@@ -364,6 +366,39 @@ def analysis():
 			flash("Try Again !!")
 			return redirect(url_for("alreadyuploaded"))
 
+		class PDF(FPDF):
+			def header(self):
+				# Logo
+				# self.image('logo_pb.png', 10, 8, 33)
+				# Arial bold 15
+				self.set_font('Arial', 'B', 15)
+				# Move to the right
+				self.cell(80)
+				# Title
+				self.cell(30, 10, 'Analysis Results', 1, 0, 'C')
+				# Line break
+				self.ln(20)
+
+			# Page footer
+			def footer(self):
+				# Position at 1.5 cm from bottom
+				self.set_y(-15)
+				# Arial italic 8
+				self.set_font('Arial', 'I', 8)
+				# Page number
+				self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
+
+		pdf = PDF()
+		pdf.alias_nb_pages()
+		pdf.add_page()
+		pdf.set_font('Times', '', 12)
+		pdf.cell(0, 10, 'Tickets with ' + str1[0:a] +" = " + str(valtochart), 0, 1)
+		for i in list(range(len(labelsrqid))):
+			pdf.cell(0, 10, 'Tickets with ' + prop + " " + str(labelsrqid[i]) + " = " + str(valuesrqid[i]), 0, 1)
+		for i in list(range(len(labelsprop))):
+			pdf.cell(0, 10, 'Tickets with ' + txtprop + " " + str(labelsprop[i]) + " = " + str(valuesprop[i]), 0, 1)
+		pdf.output('proj.pdf', 'F')
+
 		return render_template('analysispage.html', valtochart=valtochart,propsstr=str1[0:a], valuesrqid=valuesrqid,
 							   labelsrqid=labelsrqid, rqid=rqid, idval=idval, prop=prop, labelsprop=labelsprop,
 							   valuesprop=valuesprop, txtprop=txtprop, )
@@ -456,6 +491,39 @@ def analysis():
 	#	if txt == "":
 	#		propsstr = "NA"
 	#		valtochart = "NA"
+
+		class PDF(FPDF):
+			def header(self):
+				# Logo
+				# self.image('logo_pb.png', 10, 8, 33)
+				# Arial bold 15
+				self.set_font('Arial', 'B', 15)
+				# Move to the right
+				self.cell(80)
+				# Title
+				self.cell(30, 10, 'Analysis Results', 1, 0, 'C')
+				# Line break
+				self.ln(20)
+
+			# Page footer
+			def footer(self):
+				# Position at 1.5 cm from bottom
+				self.set_y(-15)
+				# Arial italic 8
+				self.set_font('Arial', 'I', 8)
+				# Page number
+				self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
+
+		pdf = PDF()
+		pdf.alias_nb_pages()
+		pdf.add_page()
+		pdf.set_font('Times', '', 12)
+		pdf.cell(0, 10, 'Tickets with ' + propsstr + " = " + str(valtochart), 0, 1)
+		for i in list(range(len(labelsrqid))):
+			pdf.cell(0, 10, 'Tickets with ' + prop + " " + str(labelsrqid[i])+" = "+str(valuesrqid[i]), 0, 1)
+		for i in list(range(len(labelsprop))):
+			pdf.cell(0, 10, 'Tickets with ' + txtprop + " " + str(labelsprop[i]) + " = " + str(valuesprop[i]), 0, 1)
+		pdf.output('proj.pdf', 'F')
 
 		return render_template('analysispage.html', valtochart=valtochart, propsstr=propsstr, valuesrqid=valuesrqid,
 							   labelsrqid=labelsrqid, rqid=rqid, idval=idval, prop=prop, labelsprop=labelsprop,
